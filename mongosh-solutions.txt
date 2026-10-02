@@ -1,0 +1,160 @@
+Q1
+_____
+db.createCollection("books", {
+   validator: {
+      $jsonSchema: {
+         bsonType: "object",
+         required: ["title"],
+         properties: {
+            title: {
+               bsonType: "string",
+               minLength: 1,
+               description: "title is required and must be a non-empty string"
+            }
+         }
+      }
+   }
+})
+
+Q2
+_____
+db.authors.insertOne({name: "Author1",
+   nationality: "British"})
+
+Q3
+____
+db.createCollection("logs",{capped:true,size:1024*1024})
+
+Q4
+____
+db.books.createIndex({title:1})
+
+Q5
+____
+db.books.insertOne({title: "Book1",
+   author: "Ali",
+   year: 1937,
+   genres: ["Fantasy", "Adventure"]})
+
+Q6
+_____
+db.books.insertMany([{title: "Book1",
+   author: "Mohamed",
+   year: 1937,
+   genres: ["Adventure"]},{title: "Book1",
+   author: "Ahmed",
+   year: 1936,
+   genres: ["gantasy", "Adventure"]},{title: "Book1",
+   author: "Ali",
+   year: 1933,
+   genres: ["Fantasy", "Adventure"]}])
+
+Q7
+____
+db.logs.insertOne({
+   book_id: ObjectId("6ab5a5215a81a768200e1d51"),
+   action: "borrowed"
+})   
+
+
+Q8
+_____
+db.books.updateOne(
+   { title: "Future" },
+   { $set: { year: 2022 } }
+)
+
+
+Q9
+_____
+db.books.findOne({ title: "Brave New World" })
+
+
+Q10
+_____
+
+db.books.find({
+   year: { $gte: 1990, $lte: 2010 }
+})
+
+
+
+Q11
+_____
+
+
+db.books.find({ genres: "Science Fiction" })
+
+
+Q12
+_____
+db.books.find({})
+   .sort({ year: -1 })
+   .skip(2)
+   .limit(3)
+
+Q13
+_____
+
+db.books.find({ year: { $type: "int" } })
+
+
+
+Q14
+_____
+db.books.find({
+   genres: { $nin: ["Horror", "Science Fiction"] }
+})
+
+
+Q15
+_____
+
+db.books.deleteMany({ year: { $lt: 2000 } })
+
+
+Q16
+_____
+
+
+db.books.aggregate([
+   { $match: { year: { $gt: 2000 } } },
+   { $sort: { year: -1 } }
+])
+
+
+Q17
+_____
+db.books.aggregate([
+   { $match: { year: { $gt: 2000 } } },
+   { $project: { title: 1, author: 1, year: 1, _id: 0 } }
+])
+
+
+Q18
+_____
+db.books.aggregate([
+   { $unwind: "$genres" }
+])
+
+
+Q19
+_____
+db.logs.aggregate([
+   {
+        $lookup: {
+          from: "books",
+          localField: "book_id",
+          foreignField: "_id",
+          as: "book_details",
+        },
+      },
+      {
+        $project: {
+          action: 1,
+          "book_details.title": 1,
+          "book_details.author": 1,
+          "book_details.year": 1
+        },
+      }
+])
